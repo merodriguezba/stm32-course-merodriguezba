@@ -18,6 +18,16 @@
 
 #include <stdint.h>
 
+
+char primera_variable=64;
+uint8_t primer_varible=8;
+uint32_t segunda_variable=32;
+uint64_t tercera_variable=64;
+
+
+
+
+
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
   #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
 #endif
