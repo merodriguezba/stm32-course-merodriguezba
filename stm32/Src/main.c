@@ -18,22 +18,60 @@
 
 #include <stdint.h>
 
-
-char primera_variable=64;
-uint8_t primer_varible=8;
-uint32_t segunda_variable=32;
-uint64_t tercera_variable=64;
+/* Definicion de Variable*/
 
 
+//uint8_t primera_variable=0;
+//uint32_t segunda_variable=0;
+//uint64_t tercera_variable=0;
 
+//uint16_t dummy_16bit_dec = 0;
+//uint16_t dummy_16bit_bin = 0;
+//uint16_t dummy_16bit_hex = 0;
+
+uint16_t overflow_demo = 0;
+uint8_t dummy_8bit=0;
+uint16_t dummy_16bit=0;
+uint32_t dummy_32bit=0;
 
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
-  #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
+ // #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
 #endif
 
 int main(void)
 {
+
+	//primera_variable = 28;
+	//segunda_variable = 60;
+	//tercera_variable = 57;
+
+
+	//dummy_16bit_dec = 32;
+	//dummy_16bit_hex = 0x20;
+	//dummy_16bit_bin = 0b100000;
+
+	//dummy_16bit_bin = dummy_16bit_bin <<3;
+	//dummy_16bit_bin = dummy_16bit_bin >>3;
+
+	/*exponiendo un casa de overflow*/
+
+	dummy_8bit=225;
+	dummy_16bit=225;
+	dummy_32bit=225;
+
+	/*incremento el valor  de la variable  overflow dummy_8bit en 1 */
+
+	overflow_demo = dummy_8bit + 1;
+	overflow_demo = overflow_demo + 1;
+
+	overflow_demo = 735;
+	overflow_demo = 0;
+
+	for (uint16_t counter = 0; counter < 735; counter++){
+		overflow_demo++;
+	}
+
     /* Loop forever */
 	while (1){
 
