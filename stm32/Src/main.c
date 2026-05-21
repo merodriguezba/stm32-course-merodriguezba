@@ -17,22 +17,8 @@
  */
 
 #include <stdint.h>
+#include <stm32f4xx.h>
 
-/* Definicion de Variable*/
-
-
-//uint8_t primera_variable=0;
-//uint32_t segunda_variable=0;
-//uint64_t tercera_variable=0;
-
-//uint16_t dummy_16bit_dec = 0;
-//uint16_t dummy_16bit_bin = 0;
-//uint16_t dummy_16bit_hex = 0;
-
-uint16_t overflow_demo = 0;
-uint8_t dummy_8bit=0;
-uint16_t dummy_16bit=0;
-uint32_t dummy_32bit=0;
 
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
@@ -42,37 +28,33 @@ uint32_t dummy_32bit=0;
 int main(void)
 {
 
-	//primera_variable = 28;
-	//segunda_variable = 60;
-	//tercera_variable = 57;
+
+	// Encendemos la señal de reloj para poder usar el GPIOA - se hace con el RCC  AHB1
+
+	//RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;  //Escribimos un 1 para encenderlo, ponemos una mascara RCC_AHB1ENR_GPIOAEN, la encontramos en el stm32f411xe.h
+
+	//GPIOA->MODER |= GPIO_MODER_MODE0_1;  //NOMBRE DEL PERISFERICO_NOMBRE DEL REGISTRO QUE QUEREMOS MODIFICAR_NOMBRE DEL REGISTRO QUE QUEREMOS MODIFICAR
 
 
-	//dummy_16bit_dec = 32;
-	//dummy_16bit_hex = 0x20;
-	//dummy_16bit_bin = 0b100000;
+	/*------------------LED BLINKI--------------*/
 
-	//dummy_16bit_bin = dummy_16bit_bin <<3;
-	//dummy_16bit_bin = dummy_16bit_bin >>3;
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
 
-	/*exponiendo un casa de overflow*/
+	/* Configuracion del pin A5 como salida*/
+	GPIOA->MODER |= (0b01 << GPIO_MODER_MODE5_Pos);
 
-	dummy_8bit=225;
-	dummy_16bit=225;
-	dummy_32bit=225;
+	/*configuracion del pin A5 como slaida push-pull*/
+	GPIOA->OTYPER &= ~(GPIO_OTYPER_OT5);
 
-	/*incremento el valor  de la variable  overflow dummy_8bit en 1 */
+	/*Limpiando la posicion de los bits que deseo borrar*/
+	GPIOA->OSPEEDR &= ~(0B11 << GPIO_OSPEEDR_OSPEED5_Pos);
 
-	overflow_demo = dummy_8bit + 1;
-	overflow_demo = overflow_demo + 1;
+	/*Seleccionando la velocidad fast*/
+	GPIOA->OSPEEDR |= (0B10 << GPIO_OSPEEDR_OSPEED5_Pos);
 
-	overflow_demo = 735;
-	overflow_demo = 0;
+	GPIOA->ODR |= (GPIO_ODR_OD5);
 
-	for (uint16_t counter = 0; counter < 735; counter++){
-		overflow_demo++;
-	}
-
-    /* Loop forever */
+	/* Loop forever */
 	while (1){
 
 	}
