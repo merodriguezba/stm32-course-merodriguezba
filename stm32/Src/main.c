@@ -28,31 +28,57 @@
 int main(void)
 {
 
+/*CONFIGURACION DEL GPIOA*/
 
-	// Encendemos la señal de reloj para poder usar el GPIOA - se hace con el RCC  AHB1
+	SCB->CPACR |= ((3UL << 20) | (3UL << 22));
 
-	//RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;  //Escribimos un 1 para encenderlo, ponemos una mascara RCC_AHB1ENR_GPIOAEN, la encontramos en el stm32f411xe.h
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;						//Activamos la señal de reloj
 
-	//GPIOA->MODER |= GPIO_MODER_MODE0_1;  //NOMBRE DEL PERISFERICO_NOMBRE DEL REGISTRO QUE QUEREMOS MODIFICAR_NOMBRE DEL REGISTRO QUE QUEREMOS MODIFICAR
+	GPIOA->MODER &= ~(0b11 <<GPIO_MODER_MODE5_Pos);				//Limpiamos la posicion primero, por posibles valores previos
+
+	GPIOA->MODER |= (0b01 <<GPIO_MODER_MODE5_Pos);				//Configuramos el pin A5 como salida
+
+	GPIOA->OTYPER &= ~(GPIO_OTYPER_OT5);						//Configuramos el pin A5 como salida push-pull
+
+	GPIOA->OSPEEDR &= ~(0b11 << GPIO_OSPEEDR_OSPEED5_Pos);		//Limpiamos la posicion de los bits que deseo borrar
+
+	GPIOA->OSPEEDR |= (0b10 <<GPIO_OSPEEDR_OSPEED5_Pos);		//Selecionamos la velocidad fast
+
+	GPIOA->ODR |= (GPIO_ODR_OD5);								//Escribimos un 1 en la posicion 5 -> encender el LED
+
+	GPIOA->PUPDR &= ~(0x3 << 10);								//No pull
 
 
-	/*------------------LED BLINKI--------------*/
 
-	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
+/*BLINKI TIM3*/
 
-	/* Configuracion del pin A5 como salida*/
-	GPIOA->MODER |= (0b01 << GPIO_MODER_MODE5_Pos);
+	RCC->APB1ENR &= ~(RCC_APB1ENR_TIM3EN);		// limpiamos la posicion TIM2EN
 
-	/*configuracion del pin A5 como slaida push-pull*/
-	GPIOA->OTYPER &= ~(GPIO_OTYPER_OT5);
+	RCC->APB1ENR |= RCC_APB1ENR_TIM3EN; 		// Activamos la señal de reloj
 
-	/*Limpiando la posicion de los bits que deseo borrar*/
-	GPIOA->OSPEEDR &= ~(0B11 << GPIO_OSPEEDR_OSPEED5_Pos);
+	TIM3->ARR = 249;							//Para general una señal de 250 ms
 
-	/*Seleccionando la velocidad fast*/
-	GPIOA->OSPEEDR |= (0B10 << GPIO_OSPEEDR_OSPEED5_Pos);
+	TIM3->PSC = 15999;							//La señal que incrementa el CNT es de 1kHz
 
-	GPIOA->ODR |= (GPIO_ODR_OD5);
+	TIM3->CNT = 0;								//Reiniciamos el CNT (No es necesario)
+
+	TIM3->CR1 &= ~(TIM_CR1_DIR);				//Configuramos para que el TIM3 ccuente  de forma acendente
+
+	TIM3->CR1 &= ~(TIM_CR1_ARPE);				//Limpiamoos la posicion ARPE para tenerla en un estado conocido
+
+	TIM3->CR1 |= TIM_CR1_ARPE;					//Activamos el registrro de precarga del ARR
+
+	__NVIC_EnableIRQ(TIM3_IRQn);				//Activamos la IRQ del TIM3 para que el NVIC reciba las señales de ella
+
+	TIM3->SR &= ~(TIM_SR_UIF);					// Bajamos la bandera de la interrupcion del TIM3
+
+	TIM3->DIER &= ~(TIM_DIER_UIE);				//Limpiamos la posicion UIE del registro para garantizar un estado conocido
+
+	TIM3->DIER |= TIM_DIER_UIE;					//Activamos la interupccion del actualizacion del TIM3
+
+	TIM3->CR1 |= (TIM_CR1_CEN);					//Ponemos a 1 en CEN, de forma que el TIM3 comience a contar
+
+
 
 	/* Loop forever */
 	while (1){
@@ -61,5 +87,13 @@ int main(void)
 	return 0;
 }
 
+//ISR del TIM3
+void TIM3_IRQHandler (void){
+	if(TIM3->SR && TIM_SR_UIF){			//Asi se evaluan las posiciones de las bandera en las funciones, comparando la posicion actual con un && y un 1
+		GPIOA->ODR ^= GPIO_ODR_OD5;		//Toggle LED
+		TIM3->SR &= ~(TIM_SR_UIF); 		// Bajamos la bandera de la interrupcion del TIM3
+	}
+
+}
 
 
